@@ -21,4 +21,9 @@
     <string name="east_E">E</string>
     <string name="north_east_NE">NE</string>
     <string name="not_available">N/A</string>
+
+
+    <string name="strength_label">Strength : </string>
+    <string name="compass">Compass</string>
+    <string name="accuracy">Accuracy</string>
 </resources>

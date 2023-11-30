@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
     private lateinit var deviceHeadImage : ImageView
     private lateinit var direction : TextView
     private lateinit var menu: DynamicRippleImageButton
+    private lateinit var magneticStrengthValueTextView : TextView
+    private lateinit var sensorAccuracyStateTextView : TextView
 
     private val accelerometerReadings = FloatArray(3)
     private val magnetometerReadings = FloatArray(3)
@@ -58,6 +60,8 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
     private var startAngle = 0F
     private val degreesPerRadian = 180 / Math.PI
     private val twoTimesPi = 2.0 * Math.PI
+    private var accelerometerAccuracy: Int = SensorManager.SENSOR_STATUS_ACCURACY_HIGH
+    private var magneticAccuracy: Int = SensorManager.SENSOR_STATUS_ACCURACY_HIGH
 
 
     private lateinit var sensorManager: SensorManager
@@ -70,12 +74,12 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         setContentView(R.layout.activity_main)
         SharedPreferences.init(this)
         SharedPreferences.getSharedPreferences().registerOnSharedPreferenceChangeListener(this)
-        dial = findViewById(R.id.dial)
         degrees = findViewById(R.id.degrees)
         deviceHeadImage = findViewById(R.id.deviceHead)
         direction = findViewById(R.id.direction)
         menu = findViewById(R.id.rippleButton)
-        loadImage(R.drawable.compass_dial, dial, this, 0)
+        sensorAccuracyStateTextView = findViewById(R.id.mag_accuracy_value)
+        magneticStrengthValueTextView = findViewById(R.id.mag_strength_value)
 
         initializeListeners()
 
@@ -96,7 +100,6 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         }
 
         isAnimated = CompassPreferences.isUsingPhysicalProperties()
-        setPhysicalProperties()
 
 
     }
@@ -104,11 +107,12 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
     override fun onResume() {
         super.onResume()
         register()
+        initializePhysicalPropertiesImage()
 
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         dial.clearAnimation()
         unregister()
     }
@@ -165,6 +169,8 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
                     readingsAlpha
                 )
                 magnetometer = Vector3(magnetometerReadings[0], magnetometerReadings[1], magnetometerReadings[2])
+                val magneticStrength = calculateMagneticStrength(magnetometer.x, magnetometer.y, magnetometer.z)
+                updateMagneticStrengthTextView(magneticStrengthValueTextView , magneticStrength)
             }
         }
 
@@ -187,11 +193,14 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        Log.d(this.attributionTag, "onAccuracyChanged: " )
-    }
+        when (sensor?.type) {
+            Sensor.TYPE_ACCELEROMETER -> accelerometerAccuracy = accuracy
+            Sensor.TYPE_MAGNETIC_FIELD -> magneticAccuracy = accuracy
+        }
 
+        updateAccuracyTextView(sensorAccuracyStateTextView, accelerometerAccuracy, magneticAccuracy)
+    }
 
     private fun viewRotation(rotationAngle: Float, animate: Boolean) {
         dial.rotationUpdate(rotationAngle * -1, animate)
@@ -215,7 +224,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         dial.setPhysical(inertia, damping, magnetic)
     }
 
-    fun initializeListeners(){
+    private fun initializeListeners(){
         menu.setOnClickListener {
            showCompassMenu()
         }
@@ -226,6 +235,81 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         val compassMenu = CompassMenu()
         compassMenu.show(supportFragmentManager, compassMenu.tag)
     }
+
+
+    private fun initializePhysicalPropertiesImage() {
+        dial = findViewById(R.id.dial)
+
+        if (dial.drawable == null) {
+             loadImage(R.drawable.compass_dial, dial, this, 0)
+            setPhysicalProperties()
+        }
+
+    }
+
+    private fun calculateMagneticStrength(x: Float, y: Float, z: Float): Float {
+        return kotlin.math.sqrt(x * x + y * y + z * z)
+    }
+
+    private  fun updateMagneticStrengthTextView(strengthValueTv: TextView, magneticStrength: Float) {
+        // Update the TextView with the magnetic strength
+        strengthValueTv.text = String.format("%.0f µT", magneticStrength)
+
+        // Define the ranges for color coding
+        val bestRange = Pair(25.0, 65.0)
+        val moderateRange = Pair(20.0, 80.0)
+
+        // Set text color based on the magnetic strength range
+        val textColor = when (magneticStrength) {
+            in bestRange.first..bestRange.second -> this.getColor(R.color.colorAccent)
+            in moderateRange.first..moderateRange.second -> this.getColor(R.color.speedometer_needle_end)
+            else -> this.getColor(R.color.speedometer_start)
+        }
+
+        strengthValueTv.setTextColor(textColor)
+    }
+
+
+    private fun updateAccuracyTextView(accuracyTV: TextView, accelerometerAccuracy: Int, magneticAccuracy: Int) {
+        // Choose the lower accuracy level between accelerometer and magnetic sensor
+        val overallAccuracy = when {
+            accelerometerAccuracy == SensorManager.SENSOR_STATUS_UNRELIABLE || magneticAccuracy == SensorManager.SENSOR_STATUS_UNRELIABLE -> {
+                // If either sensor is unreliable, set overall accuracy to low
+                SensorManager.SENSOR_STATUS_UNRELIABLE
+            }
+            accelerometerAccuracy == SensorManager.SENSOR_STATUS_ACCURACY_LOW || magneticAccuracy == SensorManager.SENSOR_STATUS_ACCURACY_LOW -> {
+                // If either sensor has low accuracy, set overall accuracy to low
+                SensorManager.SENSOR_STATUS_ACCURACY_LOW
+            }
+            accelerometerAccuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM || magneticAccuracy == SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> {
+                // If either sensor has medium accuracy, set overall accuracy to medium
+                SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM
+            }
+            else -> {
+                // If both sensors have high accuracy, set overall accuracy to high
+                SensorManager.SENSOR_STATUS_ACCURACY_HIGH
+            }
+        }
+
+        // Update the TextView with accuracy level and color
+        accuracyTV.text = when (overallAccuracy) {
+            SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "Low"
+            SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "Medium"
+            SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "High"
+            else -> "Unknown"
+        }
+
+        // Set text color based on the overall accuracy level
+        val textColor = when (overallAccuracy) {
+            SensorManager.SENSOR_STATUS_ACCURACY_LOW -> this.getColor(R.color.speedometer_start)
+            SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> this.getColor(R.color.speedometer_needle_end)
+            SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> this.getColor(R.color.colorAccent)
+            else -> this.getColor(R.color.colorAccent)
+        }
+
+        accuracyTV.setTextColor(textColor)
+    }
+
 
 
 }
