@@ -19,12 +19,6 @@
         android:orientation="vertical"
         android:padding="@dimen/options_container_horizontal_padding">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1px"
-            android:layout_marginVertical="@dimen/options_sub_item_padding"
-            android:background="@color/dividerColor" />
-
         <com.example.compassdemo.decorations.ripple.DynamicRippleLinearLayout
             android:id="@+id/compass_menu_gimbal_lock"
             android:layout_width="match_parent"
@@ -86,6 +80,38 @@
 
             <com.example.compassdemo.decorations.switchview.SwitchView
                 android:id="@+id/toggle_code"
+                android:layout_width="@dimen/switch_width"
+                android:layout_height="wrap_content" />
+
+        </com.example.compassdemo.decorations.ripple.DynamicRippleLinearLayout>
+        <com.example.compassdemo.decorations.ripple.DynamicRippleLinearLayout
+            android:id="@+id/compass_menu_rotation_vector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ripple_btn"
+            android:clickable="true"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:padding="@dimen/options_item_padding">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:drawablePadding="@dimen/options_text_margin_start"
+                android:fontFamily="@font/regular"
+                android:gravity="center_vertical"
+                android:text="Use Rotation Vector"
+                android:textColor="@color/textPrimary"
+                android:textSize="@dimen/options_item_text_size"
+                app:drawableStartCompat="@drawable/baseline_3d_rotation_24"
+                app:drawableTint="@color/iconRegular" />
+
+            <com.example.compassdemo.decorations.switchview.SwitchView
+                android:id="@+id/toggle_rotation_vector"
                 android:layout_width="@dimen/switch_width"
                 android:layout_height="wrap_content" />
 

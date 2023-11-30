@@ -17,6 +17,7 @@ object CompassPreferences {
     const val rotationalInertia = "rotational_inertia"
     const val usePhysicalProperties = "use_physical_properties"
     const val useGimbalLock = "use_gimbal_lock"
+    const val useRotationVector = "use_rotation_vector"
 
     //--------------------------------------------------------------------------------------------------//
 
@@ -30,23 +31,17 @@ object CompassPreferences {
 
     //--------------------------------------------------------------------------------------------------//
 
-    fun setFlowerBloom(value: Boolean) {
-        getSharedPreferences().edit().putBoolean(flowerBloom, value).apply()
-    }
+ fun setVectorSensorUsed(value: Boolean){
+     getSharedPreferences().edit().putBoolean(useRotationVector , value).apply()
+ }
 
-    fun isFlowerBloomOn(): Boolean {
-        return getSharedPreferences().getBoolean(flowerBloom, false)
-    }
 
+fun getVectorSensorUsed():Boolean{
+    return getSharedPreferences().getBoolean(useRotationVector,false)
+}
     //--------------------------------------------------------------------------------------------------//
 
-    fun setFlowerBloom(value: Int) {
-        getSharedPreferences().edit().putInt(flowerBloomTheme, value).apply()
-    }
 
-    fun getFlowerBloomTheme(): Int {
-        return getSharedPreferences().getInt(flowerBloomTheme, 0)
-    }
 
     //--------------------------------------------------------------------------------------------------//
 

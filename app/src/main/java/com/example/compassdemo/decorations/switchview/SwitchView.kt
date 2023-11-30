@@ -138,4 +138,13 @@ class SwitchView @JvmOverloads constructor(context: Context, attrs: AttributeSet
     fun invertCheckedStatus() {
         isChecked = !isChecked
     }
+
+    fun setSwitchEnabled(enabled: Boolean) {
+        isEnabled = enabled
+        if (enabled) {
+            thumb.alpha = 1.0f
+        } else {
+            thumb.alpha = 0.5f
+        }
+    }
 }

@@ -8,7 +8,6 @@ import android.hardware.SensorManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
@@ -26,6 +25,8 @@ import com.example.compassdemo.utils.LocaleHelper
 import com.example.compassdemo.decorations.DynamicRippleImageButton
 import com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
 import com.example.compassdemo.views.CompassMenu
+import com.robinhood.ticker.TickerUtils
+import com.robinhood.ticker.TickerView
 import java.lang.Math.abs
 
 class MainActivity : AppCompatActivity() , SensorEventListener , android.content.SharedPreferences.OnSharedPreferenceChangeListener {
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
     private lateinit var deviceHeadImage : ImageView
     private lateinit var direction : TextView
     private lateinit var menu: DynamicRippleImageButton
-    private lateinit var magneticStrengthValueTextView : TextView
+    private lateinit var magneticStrengthValueTextView : TickerView
     private lateinit var sensorAccuracyStateTextView : TextView
 
     private val accelerometerReadings = FloatArray(3)
@@ -49,6 +50,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
     private var isUserRotatingDial = false
     private var isAnimated = true
     private var isGimbalLock = false
+    private var isVectorUsed = false
 
     private var accelerometer = Vector3.zero
     private var magnetometer = Vector3.zero
@@ -67,6 +69,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
     private lateinit var sensorManager: SensorManager
     private lateinit var sensorAccelerometer: Sensor
     private lateinit var sensorMagneticField: Sensor
+    private lateinit var sensorRotationVector: Sensor
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,6 +83,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         menu = findViewById(R.id.rippleButton)
         sensorAccuracyStateTextView = findViewById(R.id.mag_accuracy_value)
         magneticStrengthValueTextView = findViewById(R.id.mag_strength_value)
+        magneticStrengthValueTextView.setCharacterLists(TickerUtils.provideNumberList());
 
         initializeListeners()
 
@@ -89,7 +93,9 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         kotlin.runCatching {
             sensorMagneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)!!
             sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
+            sensorRotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)!!
             haveMagnetometerSensor = true
+            haveAccelerometerSensor = true
             haveAccelerometerSensor = true
         }.getOrElse {
             haveAccelerometerSensor = false
@@ -130,6 +136,9 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
             CompassPreferences.useGimbalLock -> {
                 isGimbalLock = CompassPreferences.isUsingGimbalLock()
             }
+            CompassPreferences.useRotationVector ->{
+                isVectorUsed = CompassPreferences.getVectorSensorUsed()
+            }
         }
     }
 
@@ -140,6 +149,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         if (haveAccelerometerSensor && haveMagnetometerSensor) {
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_GAME)
             sensorManager.registerListener(this, sensorMagneticField, SensorManager.SENSOR_DELAY_GAME)
+            sensorManager.registerListener(this ,sensorRotationVector , SensorManager.SENSOR_DELAY_GAME )
         }
     }
 
@@ -153,6 +163,25 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null) return
 
+        if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
+            if (isVectorUsed) {
+                val rotationMatrix = FloatArray(9)
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                CompassAzimuth.adjustAzimuthForDisplayRotation(
+                    ((SensorManager.getOrientation(
+                        rotationMatrix,
+                        FloatArray(3)
+                    )[0] + twoTimesPi) % twoTimesPi * degreesPerRadian).toFloat(),
+                    this.windowManager
+                )
+                val azimuth = ((SensorManager.getOrientation(
+                    rotationMatrix,
+                    FloatArray(3)
+                )[0] + twoTimesPi) % twoTimesPi * degreesPerRadian).toFloat()
+                CompassAzimuth.adjustAzimuthForDisplayRotation(azimuth, this.windowManager)
+                viewRotation(azimuth.normalizeEulerAngle(false), isAnimated)
+            }
+        }
         when (event.sensor.type) {
             Sensor.TYPE_ACCELEROMETER -> {
                 LowPassFilter.smoothAndSetReadings(
@@ -160,38 +189,64 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
                     event.values,
                     readingsAlpha
                 )
-                accelerometer = Vector3(accelerometerReadings[0], accelerometerReadings[1], accelerometerReadings[2])
+                accelerometer = Vector3(
+                    accelerometerReadings[0],
+                    accelerometerReadings[1],
+                    accelerometerReadings[2]
+                )
             }
+
             Sensor.TYPE_MAGNETIC_FIELD -> {
                 LowPassFilter.smoothAndSetReadings(
                     magnetometerReadings,
                     event.values,
                     readingsAlpha
                 )
-                magnetometer = Vector3(magnetometerReadings[0], magnetometerReadings[1], magnetometerReadings[2])
-                val magneticStrength = calculateMagneticStrength(magnetometer.x, magnetometer.y, magnetometer.z)
-                updateMagneticStrengthTextView(magneticStrengthValueTextView , magneticStrength)
+                magnetometer = Vector3(
+                    magnetometerReadings[0],
+                    magnetometerReadings[1],
+                    magnetometerReadings[2]
+                )
+                val magneticStrength =
+                    calculateMagneticStrength(magnetometer.x, magnetometer.y, magnetometer.z)
+                updateMagneticStrengthTextView(magneticStrengthValueTextView, magneticStrength)
             }
         }
 
-        val angle = if (isGimbalLock) {
-            val successfullyCalculatedRotationMatrix = SensorManager.getRotationMatrix(rotation, inclination, accelerometerReadings, magnetometerReadings)
+        if (!isVectorUsed) {
+            val angle = if (isGimbalLock) {
+                val successfullyCalculatedRotationMatrix = SensorManager.getRotationMatrix(
+                    rotation,
+                    inclination,
+                    accelerometerReadings,
+                    magnetometerReadings
+                )
 
-            if (successfullyCalculatedRotationMatrix) {
-                val orientation = FloatArray(3)
-                SensorManager.getOrientation(rotation, orientation)
-                CompassAzimuth.adjustAzimuthForDisplayRotation(((orientation[0] + twoTimesPi) % twoTimesPi * degreesPerRadian).toFloat(),this.windowManager)
+                if (successfullyCalculatedRotationMatrix) {
+                    val orientation = FloatArray(3)
+                    SensorManager.getOrientation(rotation, orientation)
+                    CompassAzimuth.adjustAzimuthForDisplayRotation(
+                        ((orientation[0] + twoTimesPi) % twoTimesPi * degreesPerRadian).toFloat(),
+                        this.windowManager
+                    )
+                } else {
+                    0F
+                }
             } else {
-                0F
+                CompassAzimuth.calculate(
+                    gravity = accelerometer,
+                    magneticField = magnetometer,
+                    this.windowManager
+                )
             }
-        } else {
-            CompassAzimuth.calculate(gravity = accelerometer, magneticField = magnetometer, this.windowManager)
+            if (!isUserRotatingDial) {
+                rotationAngle = angle.normalizeEulerAngle(false)
+                viewRotation(rotationAngle, isAnimated)
+            }
         }
-        if (!isUserRotatingDial) {
-            rotationAngle = angle.normalizeEulerAngle(false)
-            viewRotation(rotationAngle, isAnimated)
-        }
+
     }
+
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         when (sensor?.type) {
@@ -251,7 +306,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         return kotlin.math.sqrt(x * x + y * y + z * z)
     }
 
-    private  fun updateMagneticStrengthTextView(strengthValueTv: TextView, magneticStrength: Float) {
+    private  fun updateMagneticStrengthTextView(strengthValueTv: TickerView, magneticStrength: Float) {
         // Update the TextView with the magnetic strength
         strengthValueTv.text = String.format("%.0f µT", magneticStrength)
 
@@ -263,10 +318,10 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         val textColor = when (magneticStrength) {
             in bestRange.first..bestRange.second -> this.getColor(R.color.colorAccent)
             in moderateRange.first..moderateRange.second -> this.getColor(R.color.speedometer_needle_end)
-            else -> this.getColor(R.color.speedometer_start)
+            else -> this.getColor(R.color.speedometer_needle_start)
         }
 
-        strengthValueTv.setTextColor(textColor)
+        strengthValueTv.textColor = textColor
     }
 
 
@@ -301,7 +356,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
 
         // Set text color based on the overall accuracy level
         val textColor = when (overallAccuracy) {
-            SensorManager.SENSOR_STATUS_ACCURACY_LOW -> this.getColor(R.color.speedometer_start)
+            SensorManager.SENSOR_STATUS_ACCURACY_LOW -> this.getColor(R.color.speedometer_needle_start)
             SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> this.getColor(R.color.speedometer_needle_end)
             SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> this.getColor(R.color.colorAccent)
             else -> this.getColor(R.color.colorAccent)

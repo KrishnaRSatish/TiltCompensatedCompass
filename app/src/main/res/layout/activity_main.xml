@@ -8,8 +8,8 @@
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+        android:layout_height="match_parent"
+        android:background="@color/mainBackground"/>
 
     <TextView
         android:id="@+id/textView8"
@@ -45,7 +45,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="100dp"
         android:drawablePadding="10dp"
         android:fontFamily="@font/light"
         android:gravity="center_horizontal"
@@ -102,7 +102,7 @@
     <TextView
         android:id="@+id/mag_strength_label"
         android:layout_width="wrap_content"
-        android:fontFamily="@font/light"
+        android:fontFamily="@font/medium"
         android:layout_height="wrap_content"
         android:text="@string/strength_label"
         android:textColor="@color/textPrimary"
@@ -111,10 +111,10 @@
         android:layout_marginStart="10dp"
         android:layout_marginBottom="10dp" />
 
-        <TextView
+        <com.robinhood.ticker.TickerView
             android:id="@+id/mag_strength_value"
             android:layout_width="wrap_content"
-            android:fontFamily="@font/light"
+            android:fontFamily="@font/medium"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textSize="@dimen/info_text_secondary_size"
@@ -133,7 +133,7 @@
         <TextView
             android:id="@+id/mag_accuracy_label"
             android:layout_width="wrap_content"
-            android:fontFamily="@font/light"
+            android:fontFamily="@font/medium"
             android:layout_height="wrap_content"
             android:text="@string/accuracy"
             android:textColor="@color/textPrimary"
@@ -145,7 +145,7 @@
         <TextView
             android:id="@+id/mag_accuracy_value"
             android:layout_width="wrap_content"
-            android:fontFamily="@font/light"
+            android:fontFamily="@font/medium"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textSize="@dimen/info_text_secondary_size"
