@@ -1,4 +1,4 @@
-
+package com.example.compassdemo.math
 
 object LowPassFilter {
     /**

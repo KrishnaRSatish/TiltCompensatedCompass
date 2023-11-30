@@ -76,7 +76,7 @@
             app:tint="@color/iconColor"
             tools:ignore="ContentDescription" />
 
-        <com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+        <com.example.compassdemo.views.PhysicalRotationImageView
             android:id="@+id/dial"
             android:layout_width="@dimen/compass_dial"
             android:layout_height="@dimen/compass_dial"

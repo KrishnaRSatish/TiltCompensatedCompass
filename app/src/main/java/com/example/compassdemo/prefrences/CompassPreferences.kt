@@ -1,7 +1,7 @@
 package com.example.compassdemo.prefrences
 
 import com.example.compassdemo.prefrences.SharedPreferences.getSharedPreferences
-import com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+import com.example.compassdemo.views.PhysicalRotationImageView
 
 
 /**

@@ -5,14 +5,11 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import app.simple.positional.math.Angle.normalizeEulerAngle
 import app.simple.positional.math.CompassAzimuth
 import app.simple.positional.math.Vector3
@@ -23,7 +20,8 @@ import com.example.compassdemo.utils.Direction.getDirectionNameFromAzimuth
 import com.example.compassdemo.utils.ImageLoader.loadImage
 import com.example.compassdemo.utils.LocaleHelper
 import com.example.compassdemo.decorations.DynamicRippleImageButton
-import com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+import com.example.compassdemo.views.PhysicalRotationImageView
+import com.example.compassdemo.math.LowPassFilter
 import com.example.compassdemo.views.CompassMenu
 import com.robinhood.ticker.TickerUtils
 import com.robinhood.ticker.TickerView
@@ -57,9 +55,6 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
 
     private var readingsAlpha = 0.03f
     private var rotationAngle = 0f
-    private var flowerBloom = 0
-    private var lastDialAngle = 0F
-    private var startAngle = 0F
     private val degreesPerRadian = 180 / Math.PI
     private val twoTimesPi = 2.0 * Math.PI
     private var accelerometerAccuracy: Int = SensorManager.SENSOR_STATUS_ACCURACY_HIGH
