@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">CompassDemo</string>
+
+
+
+    <!-- Directions -->
+    <string name="north">North</string>
+    <string name="north_west">North West</string>
+    <string name="west">West</string>
+    <string name="south_west">South West</string>
+    <string name="south">South</string>
+    <string name="south_east">South East</string>
+    <string name="east">East</string>
+    <string name="north_east">North East</string>
+    <string name="north_N">N</string>
+    <string name="north_west_NW">NW</string>
+    <string name="west_W">W</string>
+    <string name="south_west_SW">SW</string>
+    <string name="south_S">S</string>
+    <string name="south_east_SE">SE</string>
+    <string name="east_E">E</string>
+    <string name="north_east_NE">NE</string>
+    <string name="not_available">N/A</string>
+</resources>

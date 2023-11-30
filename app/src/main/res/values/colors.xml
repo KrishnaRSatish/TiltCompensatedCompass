@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorAccent">#2980B9</color>
+
+    <color name="mainBackground">#FFFFFF</color>
+    <color name="iconColor">#4C4C4C</color>
+    <color name="textSecondary">#404040</color>
+    <color name="textPrimary">#292929</color>
+    <color name="textTertiary">#686868</color>
+    <color name="dividerColor">#BDBDBD</color>
+    <color name="toolbarBackground">#FFFFFF</color>
+    <color name="rippleColor">#9FDADADA</color>
+    <color name="editTextBackground">#F6F6F6</color>
+
+    <!-- Bottom Bar Color -->
+    <color name="iconRegular">#9A9A9A</color>
+    <color name="indicator">#F3F3F3</color>
+
+    <color name="notification_icon_color">#D60044</color>
+
+    <color name="clock_needle_stroke_color">#FFFFFF</color>
+    <color name="clock_needle_fill_color">#202020</color>
+    <color name="clock_element_fill">#464646</color>
+    <color name="clock_face_color">#fff</color>
+
+    <!-- Graph -->
+
+    <!-- Speedometer -->
+    <color name="speedometer_needle_start">#C30C00</color>
+    <color name="speedometer_needle_end">#F88000</color>
+    <color name="speedometer_start">@color/speedometer_needle_start</color>
+    <color name="speedometer_end">@color/speedometer_needle_start</color>
+    <color name="speedometer_dial">#191919</color>
+    <color name="speedometer_number">#353535</color>
+
+    <!-- Switch -->
+    <color name="switch_off">#EAEAEA</color>
+
+    // Pin Color
+    <color name="compass_pin_color">#1B9CFF</color>
+    <color name="compass_pin_stroke_color">#FFFFFF</color>
+    <color name="map_circle_color">#261B9CFF</color>
+    <color name="bearing_circle_color">#4DFF8859</color>
+    <color name="bearing_circle_stroke">#FF8859</color>
+</resources>

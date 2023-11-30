@@ -1,0 +1,127 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/heading"
+        android:text="Compass"
+        android:paddingStart="10dp"
+        android:textColor="@color/textPrimary"
+        android:textSize="@dimen/top_bar_text_size"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/direction"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="RtlSymmetry" />
+
+    <com.example.compassdemo.decorations.DynamicRippleImageButton
+        android:id="@+id/rippleButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/ic_menu"
+        android:tint="@color/iconColor"
+        android:layout_gravity="end"
+        android:padding="10dp"
+        android:layout_marginEnd="5dp"
+        app:layout_constraintLeft_toRightOf="@+id/textView8"
+        app:layout_constraintRight_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/direction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="80dp"
+        android:drawablePadding="10dp"
+        android:fontFamily="@font/light"
+        android:gravity="center_horizontal"
+        android:textColor="@color/textPrimary"
+        android:textSize="@dimen/compass_direction_text_size"
+        app:drawableTint="@color/iconColor"
+        app:drawableTopCompat="@drawable/ic_navigation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView8" />
+
+    <FrameLayout
+        android:id="@+id/dial_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <ImageView
+            android:id="@+id/deviceHead"
+            android:layout_width="@dimen/degrees_indicator_dimension"
+            android:layout_height="@dimen/degrees_indicator_dimension"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/degree_indicator_margin_top"
+            android:src="@drawable/ic_arrow_drop_up"
+            app:tint="@color/iconColor"
+            tools:ignore="ContentDescription" />
+
+        <com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+            android:id="@+id/dial"
+            android:layout_width="@dimen/compass_dial"
+            android:layout_height="@dimen/compass_dial"
+            tools:ignore="ContentDescription" />
+
+        <com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+            android:id="@+id/flower_one"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/compass_bloom_dimension"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            tools:ignore="ContentDescription" />
+
+        <com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+            android:id="@+id/flower_two"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/compass_bloom_dimension"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            tools:ignore="ContentDescription,MissingPrefix" />
+
+        <com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+            android:id="@+id/flower_three"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/compass_bloom_dimension"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            tools:ignore="ContentDescription" />
+
+        <com.example.compassdemo.decorations.ripple.PhysicalRotationImageView
+            android:id="@+id/flower_four"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/compass_bloom_dimension"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            tools:ignore="ContentDescription" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/degrees"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:fontFamily="@font/degrees"
+        android:textColor="@color/colorAccent"
+        android:textSize="@dimen/compass_degrees_text_size" />
+</merge>
