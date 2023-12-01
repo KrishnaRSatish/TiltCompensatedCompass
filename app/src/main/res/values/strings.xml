@@ -28,4 +28,6 @@
     <string name="accuracy">Accuracy</string>
     <string name="log_sensor">Log Sensor</string>
     <string name="show_code">Show Code</string>
+    <string name="use_rotation_vector">Use Rotation Vector</string>
+    <string name="gimbal_lock">Gimbal Lock</string>
 </resources>
