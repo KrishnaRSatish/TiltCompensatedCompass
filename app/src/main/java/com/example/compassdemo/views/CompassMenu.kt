@@ -20,15 +20,22 @@ class CompassMenu : CustomBottomSheetDialogFragment() {
     private lateinit var gimbalLockSwitchContainer: DynamicRippleLinearLayout
     private lateinit var rotationVectorSwitchContainer: DynamicRippleLinearLayout
     private lateinit var toggleRotationVectorSwitch: SwitchView
+    private lateinit var toggleLogContainer : DynamicRippleLinearLayout
+    private lateinit var toggleLogSwitchView: SwitchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.compass_menu, container, false)
         toggleCode = view.findViewById(R.id.toggle_code)
         toggleGimbalLock = view.findViewById(R.id.toggle_gimbal_lock)
+
         toggleRotationVectorSwitch = view.findViewById(R.id.toggle_rotation_vector)
         codeSwitchContainer = view.findViewById(R.id.compass_menu_show_code)
+
         gimbalLockSwitchContainer = view.findViewById(R.id.compass_menu_gimbal_lock)
         rotationVectorSwitchContainer = view.findViewById(R.id.compass_menu_rotation_vector)
+
+        toggleLogContainer = view.findViewById(R.id.compass_menu_log)
+        toggleLogSwitchView = view.findViewById(R.id.toggle_log)
         return view
     }
 
@@ -37,6 +44,8 @@ class CompassMenu : CustomBottomSheetDialogFragment() {
 
         toggleCode.isChecked = CompassPreferences.getDirectionCode()
         toggleGimbalLock.isChecked = CompassPreferences.isUsingGimbalLock()
+
+        toggleLogSwitchView.isChecked = CompassPreferences.getLogEnabled()
 
         if (CompassPreferences.getVectorSensorUsed()) {
             toggleRotationVectorSwitch.isChecked = true
@@ -73,6 +82,16 @@ class CompassMenu : CustomBottomSheetDialogFragment() {
         rotationVectorSwitchContainer.setOnClickListener {
             toggleRotationVectorSwitch.isChecked = !toggleRotationVectorSwitch.isChecked
         }
+
+        toggleLogSwitchView.setOnCheckedChangeListener{
+            CompassPreferences.setLogEnabled(it)
+        }
+
+        toggleLogContainer.setOnClickListener{
+            toggleLogSwitchView.isChecked = !toggleLogSwitchView.isChecked
+        }
+
+
     }
 
 }

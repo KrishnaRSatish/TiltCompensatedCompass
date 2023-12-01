@@ -7,6 +7,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -23,9 +25,16 @@ import com.example.compassdemo.decorations.DynamicRippleImageButton
 import com.example.compassdemo.views.PhysicalRotationImageView
 import com.example.compassdemo.math.LowPassFilter
 import com.example.compassdemo.views.CompassMenu
+import com.opencsv.CSVWriter
 import com.robinhood.ticker.TickerUtils
 import com.robinhood.ticker.TickerView
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 import java.lang.Math.abs
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() , SensorEventListener , android.content.SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -44,11 +53,12 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
 
     private var haveAccelerometerSensor = false
     private var haveMagnetometerSensor = false
-    private var showDirectionCode = true
+    private var showDirectionCode = false
     private var isUserRotatingDial = false
     private var isAnimated = true
     private var isGimbalLock = false
     private var isVectorUsed = false
+    private var isLogEnabled = false
 
     private var accelerometer = Vector3.zero
     private var magnetometer = Vector3.zero
@@ -134,6 +144,11 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
             CompassPreferences.useRotationVector ->{
                 isVectorUsed = CompassPreferences.getVectorSensorUsed()
             }
+
+            CompassPreferences.logEnabled ->{
+                isLogEnabled = CompassPreferences.getLogEnabled()
+                showToastLogStatus(this , isLogEnabled)
+            }
         }
     }
 
@@ -157,7 +172,6 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null) return
-
         if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
             if (isVectorUsed) {
                 val rotationMatrix = FloatArray(9)
@@ -237,6 +251,9 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
             if (!isUserRotatingDial) {
                 rotationAngle = angle.normalizeEulerAngle(false)
                 viewRotation(rotationAngle, isAnimated)
+                if(isLogEnabled) {
+                    writeSensorDataToCSV(event, rotationAngle)
+                }
             }
         }
 
@@ -358,6 +375,66 @@ class MainActivity : AppCompatActivity() , SensorEventListener , android.content
         }
 
         accuracyTV.setTextColor(textColor)
+    }
+
+    fun writeSensorDataToCSV(event: SensorEvent, rotationAngle: Float) {
+        val timestamp = event.timestamp.toString()
+
+        when (event.sensor.type) {
+            Sensor.TYPE_ACCELEROMETER -> {
+                writeDataToCSV(timestamp, event.values, rotationAngle, "accelerometer.csv")
+            }
+            Sensor.TYPE_MAGNETIC_FIELD -> {
+                writeDataToCSV(timestamp, event.values, rotationAngle, "magnetometer.csv")
+            }
+        }
+    }
+
+    private fun writeDataToCSV(timestamp: String, values: FloatArray, rotationAngle: Float, fileName: String) {
+        val filePath = getCSVFilePath(fileName)
+
+        try {
+            val file = File(filePath)
+
+            if (!file.exists()) {
+                if (file.createNewFile()) {
+                    Log.d("CSVWriter", "File created successfully at $filePath")
+                    // Write header if the file is newly created
+                    FileWriter(file, true).use { writer ->
+                        writer.append("Timestamp,X,Y,Z,RotationAngle\n")
+                    }
+                } else {
+                    Log.e("CSVWriter", "Error creating file at $filePath")
+                    return
+                }
+            }
+
+            FileWriter(file, true).use { writer ->
+                // Write data to the file
+                writer.append("$timestamp,${values[0]},${values[1]},${values[2]},$rotationAngle\n")
+            }
+
+            Log.d("CSVWriter", "Data written to $filePath")
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+    private fun getCSVFilePath(fileName: String): String {
+        // Use context.filesDir to get the app's internal storage directory
+        val directory = File(this.filesDir, "SensorData")
+
+        // Create the directory if it doesn't exist
+        if (!directory.exists() && !directory.mkdirs()) {
+            Log.e("CSVWriter", "Error creating directory at ${directory.absolutePath}")
+        }
+
+        return "${directory.absolutePath}/$fileName"
+    }
+
+
+    private fun showToastLogStatus(context: Context, isLogStarted: Boolean) {
+        val message = if (isLogStarted) "Log Started" else "Log Ended"
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
 

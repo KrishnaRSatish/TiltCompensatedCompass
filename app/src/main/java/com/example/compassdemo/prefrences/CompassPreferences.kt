@@ -18,6 +18,7 @@ object CompassPreferences {
     const val usePhysicalProperties = "use_physical_properties"
     const val useGimbalLock = "use_gimbal_lock"
     const val useRotationVector = "use_rotation_vector"
+    const val logEnabled = "log_enabled"
 
     //--------------------------------------------------------------------------------------------------//
 
@@ -92,4 +93,15 @@ fun getVectorSensorUsed():Boolean{
     fun isUsingGimbalLock(): Boolean {
         return getSharedPreferences().getBoolean(useGimbalLock, false)
     }
+
+   // --------------------------------------------------------------------------------------------//
+
+    fun setLogEnabled(value : Boolean) {
+        getSharedPreferences().edit().putBoolean(logEnabled,value).apply()
+    }
+
+    fun getLogEnabled():Boolean{
+        return getSharedPreferences().getBoolean(logEnabled, false)
+    }
+
 }
