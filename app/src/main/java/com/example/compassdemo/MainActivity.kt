@@ -25,7 +25,6 @@ import com.example.compassdemo.decorations.DynamicRippleImageButton
 import com.example.compassdemo.views.PhysicalRotationImageView
 import com.example.compassdemo.math.LowPassFilter
 import com.example.compassdemo.views.CompassMenu
-import com.opencsv.CSVWriter
 import com.robinhood.ticker.TickerUtils
 import com.robinhood.ticker.TickerView
 import java.io.File
